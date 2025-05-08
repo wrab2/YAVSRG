@@ -69,6 +69,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
     let fill_column_gaps = noteskin_config.FillColumnGaps
     let receptor_colors = noteskin_config.ReceptorColors.[keys - 3]
 
+    do NoteAlignments.style <- noteskin_config.NoteAlignment
     let receptor = Content.Texture "receptor"
     let judgement_line = Content.Texture "judgementline"
     let holdtail = Content.Texture "holdtail"

@@ -13,8 +13,8 @@ type AlignmentParts =
     | Receptor = 5
 
 module NoteAlignments =
+    let mutable style = AlignmentStyle.DDR
     let offset ( part:AlignmentParts ) ( height:float32 ) : float32 =
-        let style = AlignmentStyle.DDR
 
         match style with
         | AlignmentStyle.DDR -> 

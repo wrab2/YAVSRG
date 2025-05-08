@@ -188,6 +188,8 @@ type NotesSettingsPage() =
                     )
             )
 
+    let alignment_style = Setting.simple data.NoteAlignment
+
     member this.SaveChanges() =
         Skins.save_noteskin_config
             { Content.NoteskinConfig with
@@ -195,6 +197,7 @@ type NotesSettingsPage() =
                 NoteColors = note_colors
                 Rotations = note_rotations
                 UseRotation = use_rotation.Value
+                NoteAlignment = alignment_style.Value
             }
 
     override this.Content() =
@@ -241,6 +244,17 @@ type NotesSettingsPage() =
         |+ PageSetting(%"noteskin.animationtime", Slider(Setting.uom note_animation_time))
             .Help(Help.Info("noteskin.animationtime"))
             .Pos(16)
+        |+ PageSetting(
+            %"noteskin.alignmentstyle",
+            SelectDropdown(
+                [|
+                    AlignmentStyle.DDR, "DDR"
+                |],
+                alignment_style
+            )
+        )
+            .Help(Help.Info("noteskin.alignmentstyle"))
+            .Pos(18)
         :> Widget
 
     override this.Title = %"noteskin.notes"
