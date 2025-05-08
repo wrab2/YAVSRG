@@ -208,7 +208,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     Render.tex_quad
                         (Rect.FromSize(
                             left + column_positions.[k],
-                            hitposition + note_height - note_height / receptor_aspect_ratio,
+                            hitposition - note_height / receptor_aspect_ratio + NoteAlignments.offset AlignmentParts.Receptor note_height,
                             column_width,
                             note_height / receptor_aspect_ratio
                          ).TranslateY(note_height * noteskin_config.ReceptorOffset)
@@ -230,7 +230,11 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
         let inline draw_note (k: int, pos: float32, color: int) : unit =
             Render.tex_quad
-                ((Rect.FromSize(left + column_positions.[k], pos, column_width, note_height)
+                ((Rect.FromSize(
+                    left + column_positions.[k], 
+                    pos + NoteAlignments.offset AlignmentParts.Note note_height, 
+                    column_width, 
+                    note_height)
                   |> scroll_direction_transform bottom)
                     .AsQuad
                  |> rotation k)
@@ -239,7 +243,11 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
         let inline draw_head (k: int, pos: float32, color: int, tint: Color) : unit =
             Render.tex_quad
-                ((Rect.FromSize(left + column_positions.[k], pos, column_width, note_height)
+                ((Rect.FromSize(
+                    left + column_positions.[k], 
+                    pos + NoteAlignments.offset AlignmentParts.Head note_height, 
+                    column_width, 
+                    note_height)
                   |> scroll_direction_transform bottom)
                     .AsQuad
                  |> rotation k)
@@ -250,9 +258,9 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
             Render.tex_quad
                 ((Rect.FromEdges(
                     left + column_positions.[k],
-                    pos_a + note_height * 0.5f - 1f,
+                    pos_a + NoteAlignments.offset AlignmentParts.Body_start note_height,
                     left + column_positions.[k] + column_width,
-                    pos_b + note_height * 0.5f + 1f |> min playfield_height
+                    pos_b + NoteAlignments.offset AlignmentParts.Body_end note_height |> min playfield_height
                   )
                   |> scroll_direction_transform bottom)
                     .AsQuad)
@@ -274,7 +282,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     (
                         Rect.FromEdges(
                             left + column_positions.[k],
-                            max clip pos,
+                            max clip (pos + NoteAlignments.offset AlignmentParts.Tail note_height),
                             left + column_positions.[k] + note_height,
                             pos + note_height
                         )
@@ -298,7 +306,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     (
                         Rect.FromEdges(
                             left + column_positions.[k],
-                            pos,
+                            pos + NoteAlignments.offset AlignmentParts.Tail note_height,
                             left + column_positions.[k] + note_height,
                             pos + note_height
                         )
