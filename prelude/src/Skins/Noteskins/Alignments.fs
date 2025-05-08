@@ -3,11 +3,12 @@ namespace Prelude.Skins.Noteskins
 
 type AlignmentStyle =
     | DDR = 0
+    | osu = 1
 
 type AlignmentParts =
     | Note = 0
     | Head = 1
-    | Body_start = 2
+    | Body_start = 2 //bottom of the hold body with downscroll
     | Body_end = 3
     | Tail = 4
     | Receptor = 5
@@ -15,7 +16,6 @@ type AlignmentParts =
 module NoteAlignments =
     let mutable style = AlignmentStyle.DDR
     let offset ( part:AlignmentParts ) ( height:float32 ) : float32 =
-
         match style with
         | AlignmentStyle.DDR -> 
             match part with
@@ -25,5 +25,14 @@ module NoteAlignments =
             | AlignmentParts.Body_end -> height * 0.5f + 1f
             | AlignmentParts.Tail -> 0f
             | AlignmentParts.Receptor -> height
+            | _ -> 0f
+        | AlignmentStyle.osu -> 
+            match part with
+            | AlignmentParts.Note -> height * 0.5f
+            | AlignmentParts.Head -> height * 0.5f
+            | AlignmentParts.Body_start -> height * 1f
+            | AlignmentParts.Body_end -> height * 0.5f + 1f
+            | AlignmentParts.Tail -> 0f
+            | AlignmentParts.Receptor -> height * 1.5f
             | _ -> 0f
         | _ -> 0f

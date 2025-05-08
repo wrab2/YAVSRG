@@ -249,6 +249,7 @@ type NotesSettingsPage() =
             SelectDropdown(
                 [|
                     AlignmentStyle.DDR, "DDR"
+                    AlignmentStyle.osu, "osu!"
                 |],
                 alignment_style
             )
