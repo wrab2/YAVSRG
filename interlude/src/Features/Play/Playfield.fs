@@ -211,7 +211,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     Render.tex_quad
                         (Rect.FromSize(
                             left + column_positions.[k],
-                            hitposition + note_height - note_height / receptor_aspect_ratio + offsets.receptor,
+                            hitposition + note_height - note_height / receptor_aspect_ratio + offsets.note,
                             column_width,
                             note_height / receptor_aspect_ratio
                          ).TranslateY(note_height * noteskin_config.ReceptorOffset)
@@ -465,7 +465,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                                 draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
                             if headpos - tailpos < offsets.tail then
-                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.tailClip, int color.[k], tint)
+                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.note, int color.[k], tint)
 
                             if not vanishing_notes || hold_state.ShowInReceptor then
                                 draw_head (k, headpos, head_and_body_color, tint)
@@ -497,7 +497,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                                 draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
                             if headpos - tailpos < offsets.tail then
-                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.tailClip, int color.[k], tint)
+                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.note, int color.[k], tint)
 
                             draw_head (k, headpos, head_and_body_color, tint)
 
