@@ -61,6 +61,8 @@ type HoldNoteSettingsPage() =
         base.Draw()
 
         let COLUMN_WIDTH = 120.0f
+        let tail_height = COLUMN_WIDTH / tail.AspectRatio
+        let offsets = new AlignmentOffsets(data.NoteAlignment, 120f, tail_height)
         let mutable left = this.Bounds.Right - 50.0f - COLUMN_WIDTH
         let bottom = this.Bounds.Bottom - 100.0f
         let top = this.Bounds.CenterY - 100.0f
@@ -95,7 +97,7 @@ type HoldNoteSettingsPage() =
                 (Sprite.pick_texture (animation.Loops, 0) head)
 
             Render.tex_quad
-                (Rect.FromSize(left, tailpos, COLUMN_WIDTH, COLUMN_WIDTH)
+                (Rect.FromSize(left, tailpos-offsets.tail, COLUMN_WIDTH, tail_height)
                  |> if flip_hold_tail.Value && downscroll && use_tail_texture.Value then
                         fun (r: Rect) -> r.ShrinkY(r.Height)
                     else

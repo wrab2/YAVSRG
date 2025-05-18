@@ -71,7 +71,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
     let receptor = Content.Texture "receptor"
     let judgement_line = Content.Texture "judgementline"
     let holdtail = Content.Texture "holdtail"
-    let tail_height = column_width * (float32 holdtail.Height / float32 holdtail.Width)
+    let tail_height = column_width / holdtail.AspectRatio
     let holdhead = Content.Texture "holdhead"
     let holdbody = Content.Texture "holdbody"
     let note = Content.Texture "note"
