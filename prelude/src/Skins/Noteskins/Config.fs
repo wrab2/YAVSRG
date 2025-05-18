@@ -142,6 +142,7 @@ type NoteskinConfig =
         JudgementLineOffset: float32
 
         NotesUnderReceptors: bool
+        NoteAlignment: AlignmentStyle
 
         /// When false, textures are upscaled pixel-for-pixel without blurring
         /// Should be false for skins with crisp pixel art edges, and true for skins with smooth edges that should stay smooth at high resolution
@@ -242,6 +243,7 @@ type NoteskinConfig =
             JudgementLineOffset = 0.0f
 
             NotesUnderReceptors = false
+            NoteAlignment = AlignmentStyle.DDR
 
             LinearSampling = true
         }
@@ -345,6 +347,7 @@ module NoteskinTextureRules =
                 "holdtail",
                 { DEFAULT with
                     IsRequired = fun config -> config.UseHoldTailTexture
+                    MustBeSquare = K false
                 }
                 "receptor",
                 {

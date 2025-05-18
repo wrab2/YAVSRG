@@ -91,6 +91,7 @@
     <Compile Include="Skins\Themes.fs" />
     <Compile Include="Skins\HUD\Config.fs" />
     <Compile Include="Skins\HUD\HudLayout.fs" />
+    <Compile Include="Skins\Noteskins\Alignments.fs" />
     <Compile Include="Skins\Noteskins\Colors.fs" />
     <Compile Include="Skins\Noteskins\Config.fs" />
     <Compile Include="Skins\Noteskins\Noteskin.fs" />

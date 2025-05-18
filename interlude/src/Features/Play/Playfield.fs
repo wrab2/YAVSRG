@@ -61,7 +61,6 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
             )
 
     let column_lighting = ColumnLighting(chart.Keys, noteskin_config, state)
-    let explosions = Explosions(chart.Keys, noteskin_config, state)
 
     let note_height = column_width
     let holdnote_trim = column_width * noteskin_config.HoldNoteTrim
@@ -72,6 +71,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
     let receptor = Content.Texture "receptor"
     let judgement_line = Content.Texture "judgementline"
     let holdtail = Content.Texture "holdtail"
+    let tail_height = column_width * (float32 holdtail.Height / float32 holdtail.Width)
     let holdhead = Content.Texture "holdhead"
     let holdbody = Content.Texture "holdbody"
     let note = Content.Texture "note"
@@ -83,6 +83,9 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
     let holds_offscreen = Array.create keys -1
     let hold_states = Array.create keys NoHold
 
+
+    let offsets = new AlignmentOffsets (noteskin_config.NoteAlignment, note_height, tail_height)
+    let explosions = Explosions(chart.Keys, noteskin_config, state, offsets)
     let rotation : int -> Quad -> Quad =
         if noteskin_config.UseRotation then
             let rotations = noteskin_config.Rotations.[keys - 3]
@@ -190,10 +193,10 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                 let area =
                     Rect.FromEdges(
                         left,
-                        hitposition + (note_height - note_height * noteskin_config.JudgementLineScale) * 0.5f,
+                        hitposition + (column_width - column_width * noteskin_config.JudgementLineScale) * 0.5f,
                         right,
-                        hitposition + (note_height + note_height * noteskin_config.JudgementLineScale) * 0.5f
-                    ).TranslateY(note_height * noteskin_config.JudgementLineOffset)
+                        hitposition + (column_width + column_width * noteskin_config.JudgementLineScale) * 0.5f
+                    ).TranslateY(column_width * noteskin_config.JudgementLineOffset)
                     |> scroll_direction_transform bottom
                     |> _.AsQuad
                     |> judgement_line_transform
@@ -208,7 +211,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     Render.tex_quad
                         (Rect.FromSize(
                             left + column_positions.[k],
-                            hitposition + note_height - note_height / receptor_aspect_ratio,
+                            hitposition + note_height - note_height / receptor_aspect_ratio + offsets.receptor,
                             column_width,
                             note_height / receptor_aspect_ratio
                          ).TranslateY(note_height * noteskin_config.ReceptorOffset)
@@ -230,7 +233,11 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
         let inline draw_note (k: int, pos: float32, color: int) : unit =
             Render.tex_quad
-                ((Rect.FromSize(left + column_positions.[k], pos, column_width, note_height)
+                ((Rect.FromSize(
+                    left + column_positions.[k], 
+                    pos + offsets.note, 
+                    column_width, 
+                    note_height)
                   |> scroll_direction_transform bottom)
                     .AsQuad
                  |> rotation k)
@@ -239,7 +246,11 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
         let inline draw_head (k: int, pos: float32, color: int, tint: Color) : unit =
             Render.tex_quad
-                ((Rect.FromSize(left + column_positions.[k], pos, column_width, note_height)
+                ((Rect.FromSize(
+                    left + column_positions.[k], 
+                    pos + offsets.note, 
+                    column_width, 
+                    note_height)
                   |> scroll_direction_transform bottom)
                     .AsQuad
                  |> rotation k)
@@ -260,7 +271,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                 (Sprite.pick_texture (animation.Loops, color) holdbody)
 
         let inline draw_tail_using_tail (k: int, pos: float32, clip: float32, color: int, tint: Color) : unit =
-            let clip_percent = (clip - pos) / note_height
+            let clip_percent = (clip - pos) / tail_height
 
             let quad_clip_correction (q: Quad) : Quad =
                 if clip_percent > 0.0f then
@@ -275,8 +286,8 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                         Rect.FromEdges(
                             left + column_positions.[k],
                             max clip pos,
-                            left + column_positions.[k] + note_height,
-                            pos + note_height
+                            left + column_positions.[k] + column_width,
+                            pos + tail_height
                         )
                         |> scroll_direction_transform bottom
                     ).AsQuad
@@ -299,7 +310,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                         Rect.FromEdges(
                             left + column_positions.[k],
                             pos,
-                            left + column_positions.[k] + note_height,
+                            left + column_positions.[k] + column_width,
                             pos + note_height
                         )
                         |> scroll_direction_transform bottom
@@ -446,14 +457,15 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
                             let headpos = if hold_state.ShowInReceptor then hitposition else begin_pos
                             let tailpos = (column_pos - holdnote_trim) |> if noteskin_config.MinimumHoldNoteLength then max headpos else id
+                            let adjusted_headpos = headpos + offsets.note
 
                             let head_and_body_color = let colors = chart.Colors.[i].Data in int colors.[k]
 
-                            if headpos <= tailpos then
-                                draw_body (k, headpos, tailpos, head_and_body_color, tint)
+                            if adjusted_headpos <= tailpos then
+                                draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
-                            if headpos - tailpos < note_height * 0.5f then
-                                draw_tail (k, tailpos, headpos + note_height * 0.5f, int color.[k], tint)
+                            if headpos - tailpos < offsets.tail then
+                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.tailClip, int color.[k], tint)
 
                             if not vanishing_notes || hold_state.ShowInReceptor then
                                 draw_head (k, headpos, head_and_body_color, tint)
@@ -477,14 +489,15 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                                 else
                                     headpos
                             let tailpos = (column_pos - holdnote_trim) |> if noteskin_config.MinimumHoldNoteLength then max headpos else id
+                            let adjusted_headpos = headpos + offsets.note
 
                             let head_and_body_color = let colors = chart.Colors.[i].Data in int colors.[k]
 
-                            if headpos <= tailpos then
-                                draw_body (k, headpos, tailpos, head_and_body_color, tint)
+                            if adjusted_headpos <= tailpos then
+                                draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
-                            if headpos - tailpos < note_height * 0.5f then
-                                draw_tail (k, tailpos, headpos + note_height * 0.5f, int color.[k], tint)
+                            if headpos - tailpos < offsets.tail then
+                                draw_tail (k, tailpos + offsets.note, adjusted_headpos + offsets.tailClip, int color.[k], tint)
 
                             draw_head (k, headpos, head_and_body_color, tint)
 
@@ -510,11 +523,12 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
                     let tailpos = bottom
                     let headpos = if hold_state.ShowInReceptor then hitposition else begin_pos
+                    let adjusted_headpos = headpos + offsets.note
 
                     let head_and_body_color = let colors = chart.Colors.[i].Data in int colors.[k]
 
-                    if headpos <= tailpos then
-                        draw_body (k, headpos, tailpos, head_and_body_color, tint)
+                    if adjusted_headpos <= tailpos then
+                        draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
                     if not vanishing_notes || hold_state.ShowInReceptor then
                         draw_head (k, headpos, head_and_body_color, tint)
@@ -541,10 +555,11 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                             max hitposition headpos
                         else
                             headpos
+                    let adjusted_headpos = headpos + offsets.note
 
                     let head_and_body_color = let colors = chart.Colors.[i].Data in int colors.[k]
 
-                    draw_body (k, headpos, tailpos, head_and_body_color, tint)
+                    draw_body (k, adjusted_headpos, tailpos, head_and_body_color, tint)
 
                     draw_head (k, headpos, head_and_body_color, tint)
 
