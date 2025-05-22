@@ -61,7 +61,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
             )
 
     let column_lighting = ColumnLighting(chart.Keys, noteskin_config, state)
-
+    let explosions = Explosions(chart.Keys, noteskin_config, state)
     let note_height = column_width
     let holdnote_trim = column_width * noteskin_config.HoldNoteTrim
     let playfield_color = noteskin_config.PlayfieldColor
@@ -85,7 +85,6 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
 
 
     let offsets = new AlignmentOffsets (noteskin_config.NoteAlignment, note_height, tail_height)
-    let explosions = Explosions(chart.Keys, noteskin_config, state, offsets)
     let rotation : int -> Quad -> Quad =
         if noteskin_config.UseRotation then
             let rotations = noteskin_config.Rotations.[keys - 3]
@@ -183,7 +182,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
         // SETUP CONSTANTS AND DRAW METHODS
 
         let scale = options.ScrollSpeed.Value / SelectedChart.rate.Value
-        let hitposition = float32 options.HitPosition.Value
+        let hitposition = float32 options.HitPosition.Value - offsets.note
 
         let playfield_height = bottom - top + (max 0.0f holdnote_trim)
         let receptor_aspect_ratio = receptor.AspectRatio
@@ -263,7 +262,7 @@ type Playfield(chart: ColoredChart, state: PlayState, noteskin_config: NoteskinC
                     left + column_positions.[k],
                     pos_a + note_height * 0.5f - 1f,
                     left + column_positions.[k] + column_width,
-                    pos_b + note_height * 0.5f + 1f |> min playfield_height
+                    pos_b + note_height * 0.5f + offsets.bodyStart |> min playfield_height
                   )
                   |> scroll_direction_transform bottom)
                     .AsQuad)
